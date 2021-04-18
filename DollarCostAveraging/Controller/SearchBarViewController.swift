@@ -22,27 +22,30 @@ class SearchBarViewController: UITableViewController {
     
     private let apiService = APIService()
     private var subscribers = Set<AnyCancellable>()
+    @Published private var searchQuery = String()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         setUpNavigationHeader()
-        performSearch()
+        observeForm()
     }
     
-    private func performSearch() {
-        apiService.fetchSymbolPublisher(keywords: "S&P500").sink { (completion) in
-            switch completion {
-            case .failure(let error):
-                print(error.localizedDescription)
-            case .finished: break
-            }
-        } receiveValue: { (searchResults) in
-            debugPrint("SearchResults:\(searchResults)")
-        }.store(in: &subscribers)
-
+    private func observeForm() {
+        $searchQuery.debounce(for: .milliseconds(750), scheduler: RunLoop.main)
+            .sink { [unowned self] (searchQuery) in
+                self.apiService.fetchSymbolPublisher(keywords: self.searchQuery).sink { (completion) in
+                    switch completion {
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    case .finished: break
+                    }
+                } receiveValue: { (searchResults) in
+                    debugPrint("SearchResults:\(searchResults)")
+                }.store(in: &self.subscribers)
+            }.store(in: &subscribers)
     }
-
+    
     private func setUpNavigationHeader(){
         navigationItem.searchController = searchBar
     }
@@ -55,13 +58,13 @@ class SearchBarViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cellId", for: indexPath)
         return cell
     }
-    
 }
 
 extension SearchBarViewController: UISearchResultsUpdating, UISearchControllerDelegate {
     
     func updateSearchResults(for searchController: UISearchController) {
-        
+        guard let searchResult = searchController.searchBar.text, !searchResult.isEmpty else { return }
+        searchQuery = searchResult
     }
 }
 
