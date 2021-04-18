@@ -13,4 +13,9 @@ class SearchTableViewCell: UITableViewCell {
     @IBOutlet weak var assetTypeLabel: UILabel!
     @IBOutlet weak var assetNameLabel: UILabel!
 
+    func configureCell(with searchResult:SearchResult){
+        assetNameLabel.text = searchResult.name
+        assetSymbolLabel.text = searchResult.symbol
+        assetTypeLabel.text = searchResult.type.appending("").appending(searchResult.currency)
+    }
 }
