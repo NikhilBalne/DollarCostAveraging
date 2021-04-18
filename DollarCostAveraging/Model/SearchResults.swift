@@ -7,27 +7,24 @@
 
 import Foundation
 
+// MARK: - SearchResults
 struct SearchResults: Decodable {
-    
     let items: [SearchResult]
     
-    enum Codingkeys: String,CodingKey {
+    enum CodingKeys: String, CodingKey {
         case items = "bestMatches"
     }
 }
 
+// MARK: - BestMatch
 struct SearchResult: Decodable {
     
-    let symbol: String
-    let name: String
-    let type: String
-    let currency: String
+    let symbol, name, type, currency: String
     
-    enum CodingKeys: String,CodingKey {
+    enum CodingKeys: String, CodingKey {
         case symbol = "1. symbol"
         case name = "2. name"
         case type = "3. type"
         case currency = "8. currency"
     }
 }
-

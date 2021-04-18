@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class SearchBarViewController: UITableViewController {
 
@@ -19,10 +20,27 @@ class SearchBarViewController: UITableViewController {
         return sc
     }()
     
+    private let apiService = APIService()
+    private var subscribers = Set<AnyCancellable>()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         setUpNavigationHeader()
+        performSearch()
+    }
+    
+    private func performSearch() {
+        apiService.fetchSymbolPublisher(keywords: "S&P500").sink { (completion) in
+            switch completion {
+            case .failure(let error):
+                print(error.localizedDescription)
+            case .finished: break
+            }
+        } receiveValue: { (searchResults) in
+            debugPrint("SearchResults:\(searchResults)")
+        }.store(in: &subscribers)
+
     }
 
     private func setUpNavigationHeader(){
